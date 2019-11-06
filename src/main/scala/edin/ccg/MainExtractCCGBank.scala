@@ -33,7 +33,7 @@ object MainExtractCCGBank {
         }
         val devFiles = ccgFiles.filter{f =>
           val section = f.getParentFile.getName.toInt
-          section == 0
+          section == 24
         }
         val testFiles = ccgFiles.filter{f =>
           val section = f.getParentFile.getName.toInt
