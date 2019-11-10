@@ -92,18 +92,18 @@ object MainCreateRule {
     case TerminalNode(word, category) => s"(${category} $word)"
   }
 
-  def
-
-  def get_word_count(trees:List[TreeNode])):Map[String,Int] = {
+  def get_word_count(trees:List[TreeNode]):Map[String,Int] = {
     trees.foldLeft(Map.empty[String, Int]){ (counter, t) =>
-      t.words.foldLeft(counter) {
-        counter + (word -> (counter.getOrElse(word, 0) + 1)
+      t.words.foldLeft(counter) {(counter,word)=>
+        counter + (word -> (counter.getOrElse(word, 0) + 1))
       }
     }
   }
+
   def get_dict(dict:Map[String,Int]) = {
-    dict.filter((k,v) => { v > 1 }).key
+    dict.filter(k => { k._2 > 1 })//.keys.toList
   }
+
 
   def isAllDigits(x: String) = x forall Character.isDigit
   def hasDash(x: String) = x.contains('-')
@@ -111,7 +111,7 @@ object MainCreateRule {
   def checkLower(x:String) = x exists (c=>c.isLower)
   def checkUpper(x:String) = x exists (c=>c.isUpper)
 
-  def add_unk_inf(token:String,word_dict:Map[String, Int]):String = {
+  def add_unk_inf(token:String,word_dict:Map[String,Int]):String = {
     var result = ""
     if(token.isEmpty){
       result = "UNK"
@@ -183,9 +183,9 @@ object MainCreateRule {
   }
 
   //token is not lowercase
-  def unkify(tokens, words_dict):List[String] ={
-    tokens.foldLeft(List.empty[String]){(final, token) =>
-      final ++ List(add_unk_inf(token), words_dict)
+  def unkify(tokens:List[String], words_dict:Map[String,Int]):List[String] ={
+    tokens.foldLeft(List.empty[String]){(strings, token) =>
+      strings ++ List(add_unk_inf(token, words_dict))
     }
   }
 
