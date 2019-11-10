@@ -92,6 +92,102 @@ object MainCreateRule {
     case TerminalNode(word, category) => s"(${category} $word)"
   }
 
+  def
+
+  def get_word_count(trees:List[TreeNode])):Map[String,Int] = {
+    trees.foldLeft(Map.empty[String, Int]){ (counter, t) =>
+      t.words.foldLeft(counter) {
+        counter + (word -> (counter.getOrElse(word, 0) + 1)
+      }
+    }
+  }
+  def get_dict(dict:Map[String,Int]) = {
+    dict.filter((k,v) => { v > 1 }).key
+  }
+
+  def isAllDigits(x: String) = x forall Character.isDigit
+  def hasDash(x: String) = x.contains('-')
+  def isAllAlpha(x: String) = x forall (c => c.isLetter && c <= 'z')
+  def checkLower(x:String) = x exists (c=>c.isLower)
+  def checkUpper(x:String) = x exists (c=>c.isUpper)
+
+  def add_unk_inf(token:String,word_dict:Map[String, Int]):String = {
+    var result = ""
+    if(token.isEmpty){
+      result = "UNK"
+    } else if(word_dict.isDefinedAt(token)){ //dicrになかったら
+      result = token
+    }else{
+      var numCaps = 0
+      var hasDigit = false
+      var hasDash = false
+      var hasLower = false
+
+      if(isAllDigits(token)){hasDigit = true}
+      else if(hasDash){hasDash = true}
+      else if(isAllAlpha(token)){
+        if(checkLower(token)){hasLower = true}
+        if(checkUpper(token)){
+          token.foreach(c =>
+            if(c.isUpper){numCaps = numCaps+1}
+          )
+        }
+      }
+      result = "UNK"
+      var lower = token.toLowerCase
+      var ch0 = token.head
+
+      if(ch0.isUpper){
+        if(numCaps == 1){
+          result = result + "-INITC"
+          if(word_dict.isDefinedAt(lower)){
+            result = result + "-KNOWNLC"
+          }
+        }else{
+          result = result + "-CAPS"
+        }
+      }else if(!(ch0.isLetter && ch0 <= 'z') && numCaps > 0){
+        result = result + "-CAPS"
+      }else if(hasLower){
+        result = result + "-LC"
+      }
+        if(hasDigit){result = result + "-NUM"}
+      if(hasDash){result = result + "-DASH"}
+      if(lower.last == 's' && lower.length >= 3){
+        var ch2 = lower.takeRight(2)
+        if(!(ch2 == 's') && !(ch2 == 'i') && !(ch2 == 'u')){
+          result = result + "-s"
+        }
+      }else if(lower.length >=5 && !(hasDash) && !(hasDigit && (numCaps > 0))){
+        if (lower.substring(lower.length-2, lower.length) == "ed")
+          result = result + "-ed"
+        else if (lower.substring(lower.length-3, lower.length) == "ing")
+          result = result + "-ing"
+        else if (lower.substring(lower.length-3, lower.length) == "ion")
+          result = result + "-ion"
+        else if (lower.substring(lower.length-2, lower.length) == "er")
+          result = result + "-er"
+        else if (lower.substring(lower.length-3, lower.length) == "est")
+          result = result + "-est"
+        else if (lower.substring(lower.length-2, lower.length) == "ly")
+          result = result + "-ly"
+        else if (lower.substring(lower.length-3, lower.length) == "ity")
+          result = result + "-ity"
+        else if (lower.substring(lower.length-1, lower.length) == "y")
+          result = result + "-y"
+        else if (lower.substring(lower.length-2, lower.length) == "al")
+          result = result + "-al"
+      }
+    }
+    result
+  }
+
+  //token is not lowercase
+  def unkify(tokens, words_dict):List[String] ={
+    tokens.foldLeft(List.empty[String]){(final, token) =>
+      final ++ List(add_unk_inf(token), words_dict)
+    }
+  }
 
   def output_oracle(tree:TreeNode) {
 
