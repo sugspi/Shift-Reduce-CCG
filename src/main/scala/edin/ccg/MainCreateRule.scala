@@ -13,7 +13,7 @@ object MainCreateRule {
     val file_dev = "/Users/guru/MyResearch/Shift-Reduce/org_data/dev.trees"
     val file_test = "/Users/guru/MyResearch/Shift-Reduce/org_data/test.trees"
 
-    //val trees_train = DerivationsLoader.fromFile(file_train).toList
+    val trees_train = DerivationsLoader.fromFile(file_train).toList
     //val trees_dev = DerivationsLoader.fromFile(file_dev).toList
     val trees_test = DerivationsLoader.fromFile(file_test).toList
     //val trees = trees_dev ++ trees_test ++ trees_train
@@ -25,6 +25,7 @@ object MainCreateRule {
     //val pw_ccg_trees_train = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/train.tree")
     //val pw_ccg_trees_dev = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev.tree")
     //val pw_ccg_trees_test = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test.tree")
+    val test_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test_preorder.oracle")
 
     //pw_table.println(rules.mkString("\n"))
     //println(rules.mkString("\n"))
@@ -46,11 +47,12 @@ object MainCreateRule {
     // pw_ccg_trees_dev.close()
     // pw_ccg_trees_test.close()
 
-    output_oracle(trees_test(0))
-
-    //for(tree <- trees_toy){
-    //  output_oracle(tree)
-    //}
+    var word_dict_from_tree = get_word_count(trees_train)
+    var word_dict = get_dict(word_dict_from_tree)
+    //output_oracle(trees_test(1),word_dict)
+    for(tree <- trees_test){
+     output_oracle(tree,word_dict,test_oracle)
+    }
 
   }
 
@@ -106,7 +108,7 @@ object MainCreateRule {
 
 
   def isAllDigits(x: String) = x forall Character.isDigit
-  def hasDash(x: String) = x.contains('-')
+  def checkDash(x: String) = x.contains('-')
   def isAllAlpha(x: String) = x forall (c => c.isLetter && c <= 'z')
   def checkLower(x:String) = x exists (c=>c.isLower)
   def checkUpper(x:String) = x exists (c=>c.isUpper)
@@ -115,7 +117,7 @@ object MainCreateRule {
     var result = ""
     if(token.isEmpty){
       result = "UNK"
-    } else if(word_dict.isDefinedAt(token)){ //dicrになかったら
+    } else if(word_dict.isDefinedAt(token)){ //dictになかったら
       result = token
     }else{
       var numCaps = 0
@@ -124,7 +126,7 @@ object MainCreateRule {
       var hasLower = false
 
       if(isAllDigits(token)){hasDigit = true}
-      else if(hasDash){hasDash = true}
+      else if(checkDash(token)){hasDash = true}
       else if(isAllAlpha(token)){
         if(checkLower(token)){hasLower = true}
         if(checkUpper(token)){
@@ -151,7 +153,7 @@ object MainCreateRule {
       }else if(hasLower){
         result = result + "-LC"
       }
-        if(hasDigit){result = result + "-NUM"}
+      if(hasDigit){result = result + "-NUM"}
       if(hasDash){result = result + "-DASH"}
       if(lower.last == 's' && lower.length >= 3){
         var ch2 = lower.takeRight(2)
@@ -189,19 +191,27 @@ object MainCreateRule {
     }
   }
 
-  def output_oracle(tree:TreeNode) {
+  def output_oracle(tree:TreeNode, word_dict:Map[String,Int],oracle:PrintWriter) {
 
-    println("# "+tree2string(tree))
+    oracle.println("# "+tree2string(tree))
+
     val category_tag = tree.category_leafs
-    for (c <- category_tag) { print(c + " ") }
-    println("")
+    for (c <- category_tag) { oracle.print(c + " ") }
+    oracle.println("")
 
     val sentence = tree.words
-    for (s <- sentence) { print(s + " ") }
-    println("")
-    for (s <- sentence) { print(s.toLowerCase + " ") }
-    println("")
-    tree.allNodesPreorder2.foreach(println)
+    for (s <- sentence) { oracle.print(s + " ") }
+    oracle.println("")
+
+    for (s <- sentence) { oracle.print(s.toLowerCase + " ") }
+    oracle.println("")
+
+    unkify(sentence, word_dict).foreach(c => oracle.print(c + " "))
+    oracle.println("")
+
+    tree.allNodesPreorder2.foreach(oracle.println)
+    oracle.println("")
+
 
     // for(node <- tree.allNodesPreorder2){
     //   node match {
