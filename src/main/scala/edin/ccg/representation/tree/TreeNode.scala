@@ -83,10 +83,22 @@ abstract class TreeNode extends State with Serializable {
     case BinaryNode(_, left, right) => this :: (left.allNodes ++ right.allNodes)
   }
 
+  def allNodesPreorder2:List[String] = this match {
+    case TerminalNode(_, _) => List("SHIFT") //List(this.toString)//if you want check vategory
+    case n@UnaryNode(cat, child) => List("NT(" + n.category + ")") ++ child.allNodesPreorder2 ++ List("REDUCE-U") //List("NT(" + cat.toString + ")") ++ child.allNodesPreorder2 ++ List("REDUCE-U")
+    case n@BinaryNode(cat, left, right) => List("NT(" + n.category + ")") ++ (left.allNodesPreorder2 ++ right.allNodesPreorder2) ++ List("REDUCE-B") //List("NT(" + cat.toString + ")") ++ (left.allNodesPreorder2 ++ right.allNodesPreorder2) ++ List("REDUCE-B")
+  }
+
   def allNodesPostorder:List[TreeNode] = this match {
     case TerminalNode(_, _) => List(this)
     case UnaryNode(_, child) => child.allNodesPostorder :+ this
     case BinaryNode(_, left, right) => (left.allNodesPostorder ++ right.allNodesPostorder) :+ this
+  }
+
+  def allNodesPostorder2:List[String] = this match {
+    case TerminalNode(_, _) => List("SHIFT")
+    case UnaryNode(cat, child) => child.allNodesPostorder2 ++ List("NT(" + cat.toString + ")") ++ List("REDUCE-U")
+    case BinaryNode(cat, left, right) => (left.allNodesPostorder2 ++ right.allNodesPostorder2) ++ List("NT(" + cat.toString + ")") ++ List("REDUCE-B")
   }
 
   def leafs : List[TerminalNode] = {
@@ -94,6 +106,14 @@ abstract class TreeNode extends State with Serializable {
       case x@TerminalNode(_, _) => List(x)
       case BinaryNode(_, l, r) => l.leafs ++ r.leafs
       case UnaryNode(_, child) => child.leafs
+    }
+  }
+
+  def category_leafs : List[Category] = {
+    this match {
+      case TerminalNode(_, c) => List(c)
+      case BinaryNode(_, l, r) => l.category_leafs ++ r.category_leafs
+      case UnaryNode(_, child) => child.category_leafs
     }
   }
 
@@ -149,4 +169,3 @@ abstract class TreeNode extends State with Serializable {
   }
 
 }
-
