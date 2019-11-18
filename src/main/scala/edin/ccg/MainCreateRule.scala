@@ -9,50 +9,63 @@ object MainCreateRule {
 
   def main(args: Array[String]): Unit = {
 
-    val file_train = "/Users/guru/MyResearch/Shift-Reduce/org_data/train.trees"
+    val file_train = "/Users/guru/MyResearch/Shift-Reduce/org_data/wsj_02-21.depccg.auto" //train.trees"
     val file_dev = "/Users/guru/MyResearch/Shift-Reduce/org_data/dev.trees"
     val file_test = "/Users/guru/MyResearch/Shift-Reduce/org_data/test.trees"
 
     val trees_train = DerivationsLoader.fromFile(file_train).toList
-    //val trees_dev = DerivationsLoader.fromFile(file_dev).toList
+    val trees_dev = DerivationsLoader.fromFile(file_dev).toList
     val trees_test = DerivationsLoader.fromFile(file_test).toList
-    //val trees = trees_dev ++ trees_test ++ trees_train
+    val trees = trees_dev ++ trees_test ++ trees_train
 
-    //val table = createNonTerminalTable(trees)
-    //val rules = findAllTheRules(trees)//, table)
+    //val table = createNonTerminalTable(trees)// not need anymore
+    val rules = findAllTheRules(trees)//, table)
 
-    //val pw_table = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/ccg_rule_table")
-    //val pw_ccg_trees_train = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/train.tree")
-    //val pw_ccg_trees_dev = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev.tree")
-    //val pw_ccg_trees_test = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test.tree")
+    val pw_table = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/ccg_rule_table")
+    val pw_ccg_trees_train = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/train.tree")
+    val pw_ccg_trees_dev = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev.tree")
+    val pw_ccg_trees_test = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test.tree")
+    val train_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/depccg_train_preorder_new2.oracle")
+    val dev_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev_preorder.oracle")
     val test_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test_preorder.oracle")
 
-    //pw_table.println(rules.mkString("\n"))
+    pw_table.println(rules.mkString("\n"))
     //println(rules.mkString("\n"))
+    pw_table.close()
 
-    // for(tree <- trees_train){
-    //   pw_ccg_trees_train.println(tree2string(tree))
-    // }
+    for(tree <- trees_train){
+      pw_ccg_trees_train.println(tree2string(tree))
+    }
+    pw_ccg_trees_train.close()
 
-    // for(tree <- trees_dev){
-    //   pw_ccg_trees_dev.println(tree2string(tree))
-    // }
+    for(tree <- trees_dev){
+      pw_ccg_trees_dev.println(tree2string(tree))
+    }
+    pw_ccg_trees_dev.close()
 
-    // for(tree <- trees_test){
-    //   pw_ccg_trees_test.println(tree2string(tree))
-    // }
-
-    // pw_table.close()
-    // pw_ccg_trees_train.close()
-    // pw_ccg_trees_dev.close()
-    // pw_ccg_trees_test.close()
+    for(tree <- trees_test){
+      pw_ccg_trees_test.println(tree2string(tree))
+    }
+    pw_ccg_trees_test.close()
 
     var word_dict_from_tree = get_word_count(trees_train)
     var word_dict = get_dict(word_dict_from_tree)
     //output_oracle(trees_test(1),word_dict)
+
+    for(tree <- trees_train){
+     output_oracle(tree,word_dict,train_oracle)
+    }
+    train_oracle.close()
+
+    for(tree <- trees_dev){
+     output_oracle(tree,word_dict,dev_oracle)
+    }
+    dev_oracle.close()
+
     for(tree <- trees_test){
      output_oracle(tree,word_dict,test_oracle)
     }
+    test_oracle.close()
 
   }
 
@@ -212,18 +225,6 @@ object MainCreateRule {
     tree.allNodesPreorder2.foreach(oracle.println)
     oracle.println("")
 
-
-    // for(node <- tree.allNodesPreorder2){
-    //   node match {
-    //     case TerminalNode(w, tag) =>
-    //       println("NT*" +tag+ "*") //+ w)
-    //       println("SHIFT")
-    //     case BinaryNode(c, _, _) =>
-    //       println("NT(" +c+ ")") //("REDUCE_B_"+c)
-    //     case UnaryNode(c, _) =>
-    //       println("NT(" +c+ ")") // ("REDUCE_U_"+c)
-    //   }
-    // }
   }
 
 }
