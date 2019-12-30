@@ -10,34 +10,34 @@ object MainCreateRule {
   def main(args: Array[String]): Unit = {
 
     val file_train = "/Users/guru/MyResearch/Shift-Reduce/org_data/wsj_02-21.depccg.auto" //train.trees"
-    val file_dev = "/Users/guru/MyResearch/Shift-Reduce/org_data/dev.trees"
-    val file_test = "/Users/guru/MyResearch/Shift-Reduce/org_data/test.trees"
+    val file_dev = "/Users/guru/MyResearch/Shift-Reduce/org_data/wsj_24.depccg.auto" //dev.trees"
+    val file_test = "/Users/guru/MyResearch/Shift-Reduce/org_data/wsj_23.depccg.auto"
 
     val trees_train = DerivationsLoader.fromFile(file_train).toList
     val trees_dev = DerivationsLoader.fromFile(file_dev).toList
     val trees_test = DerivationsLoader.fromFile(file_test).toList
-    val trees = trees_dev ++ trees_test ++ trees_train
+    val trees = trees_train //trees_dev ++ trees_test ++
 
     //val table = createNonTerminalTable(trees)// not need anymore
-    val rules = findAllTheRules(trees)//, table)
+    val rules = findAllTheRules(trees) //, table)
 
     val pw_table = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/ccg_rule_table")
-    val pw_ccg_trees_train = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/train.tree")
-    val pw_ccg_trees_dev = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev.tree")
-    val pw_ccg_trees_test = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test.tree")
+    //val pw_ccg_trees_train = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/train_depccg.tree")
+    val pw_ccg_trees_dev = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev_depccg.tree")
+    val pw_ccg_trees_test = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test._depccg.tree")
     val train_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/depccg_train_preorder_new2.oracle")
-    val dev_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev_preorder.oracle")
-    val test_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test_preorder.oracle")
+    val dev_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/dev_preorder_depccg.oracle")
+    val test_oracle = new PrintWriter("/Users/guru/MyResearch/Shift-Reduce/data/test_preorder_depccg.oracle")
 
     pw_table.println(rules.mkString("\n"))
-    //println(rules.mkString("\n"))
+    println(rules.mkString("\n"))
     pw_table.close()
 
-    for(tree <- trees_train){
-      pw_ccg_trees_train.println(tree2string(tree))
-    }
-    pw_ccg_trees_train.close()
-
+    // for(tree <- trees_train){
+    //   pw_ccg_trees_train.println(tree2string(tree))
+    // }
+    // pw_ccg_trees_train.close()
+    //
     for(tree <- trees_dev){
       pw_ccg_trees_dev.println(tree2string(tree))
     }
@@ -48,10 +48,10 @@ object MainCreateRule {
     }
     pw_ccg_trees_test.close()
 
-    var word_dict_from_tree = get_word_count(trees_train)
-    var word_dict = get_dict(word_dict_from_tree)
-    //output_oracle(trees_test(1),word_dict)
-
+     var word_dict_from_tree = get_word_count(trees_train)
+     var word_dict = get_dict(word_dict_from_tree)
+    // //output_oracle(trees_test(1),word_dict)
+    //
     for(tree <- trees_train){
      output_oracle(tree,word_dict,train_oracle)
     }
@@ -74,10 +74,10 @@ object MainCreateRule {
     for(tree <- trees){
       tree.allNodes.foreach{
         case node@UnaryNode(_, child) =>
-          allRules += s"${node.category},${child.category}"
+          allRules += s"${node.category} ${child.category}"
           //allRules += s"${table(node.category)} -> ${table(child.category)}"
         case node@BinaryNode(_, left, right) =>
-          allRules += s"${node.category},${left.category},${right.category}"
+          allRules += s"${node.category} ${left.category} ${right.category}"
           //allRules += s"${table(node.category)} -> ${table(left.category)} ${table(right.category)}"
         case _ =>
       }
@@ -206,7 +206,7 @@ object MainCreateRule {
 
   def output_oracle(tree:TreeNode, word_dict:Map[String,Int],oracle:PrintWriter) {
 
-    oracle.println("# "+tree2string(tree))
+    oracle.println("> "+tree2string(tree))
 
     val category_tag = tree.category_leafs
     for (c <- category_tag) { oracle.print(c + " ") }
